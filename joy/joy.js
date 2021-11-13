@@ -37,7 +37,11 @@ class Shape {
   through its subclasses. */
   
   // how to use **attrs
-  constructor(tag, attrs={}, children=null) {
+  constructor(
+    tag,
+    attrs = {},
+    children = null
+  ) {
     // Creates a new shape.
     this.tag = tag
     this.children = children
@@ -79,14 +83,14 @@ class Shape {
 
   show() {
     let comm = `${this.tag}(${Object.values(this.attrs).join(', ')})` 
+    console.log(this.attrs)
     return comm
   }
-}
 
-Shape.prototype.toString = () => {
-  return `<${this.tag} ${this.attrs}>`
+  toString() {
+    return `<${this.tag} ${this.attrs}>`
+  }
 }
-
 
 class Point extends Shape {
   /* Creates a new Point.
@@ -107,12 +111,9 @@ class Point extends Shape {
            p.y === this.y
   }
 
-  // show() {
-  //   return `point(${this.x}, ${this.y})`
-  // }
-}
-Point.prototype.toString = () => {
-  return `Point(${this.x}, ${this.y})`
+  toString() {
+    return `Point(${this.x}, ${this.y})`
+  }
 }
 
 class Circle extends Shape {
@@ -142,22 +143,48 @@ class Circle extends Shape {
     this.center = center
     this.radius = radius
   }
-
-  // show() {
-  //   return `circle(${this.x, this.y, this.radius})`
-  // }
 }
 
 class Ellipse extends Shape {
-
+  constructor(center=new Point(0, 0), width=200, height=100, kwargs={}) {
+    super("ellipse", {x: center.x, y: center.y, w: width, h: height})
+    this.center = center
+    this.width = width
+    this.height = height
+  }
 }
 
-function point(x, y) {
+class Rectangle extends Shape {
+  constructor(center=new Point(0, 0), width=200, height=100, kwargs={}) {
+    super("rect", {x: center.x, y: center.y, w: width, h: height})
+    this.center = center
+    this.width = width
+    this.height = height
+  }
+}
+
+class Line extends Shape {
+  constructor(start=new Point(-100, 0), end=new Point(100, 0), kwargs={}) {
+    super("line", {x1: start.x, y1: start.y, x2: end.x, y2: end.y})
+    this.start = start
+    this.end = end
+  }
+}
+
+function point({
+  x, 
+  y
+}={}) {
   // Creates a Point with x and y coordinates.
   return new Point(x, y)
 }
 
-function circle(x=0, y=0, r=100, kwargs={}) {
+function circle({
+  x = 0, 
+  y = 0,
+  r = 100, 
+  ...kwargs
+}={}) {
   /* Creates a circle with center at (x, y) and radius of r.
     Examples:
     Draw a circle.
@@ -170,7 +197,37 @@ function circle(x=0, y=0, r=100, kwargs={}) {
         c = circle(x=10, y=20, r=50)
         show(c) */
 
-  return new Circle(center=new Point(x=x, y=y), radius=r, kwargs)
+  return new Circle(new Point(x=x, y=y), r, kwargs)
+}
+
+function rectangle({
+  x = 0, 
+  y = 0,
+  w = 200,
+  h = 100,
+  ...kwargs
+}={}) {
+  return new Rectangle(new Point(x=x, y=y), w, h, kwargs)
+}
+
+function ellipse({
+  x = 0, 
+  y = 0,
+  w = 200,
+  h = 100,
+  ...kwargs
+}={}) {
+  return new Ellipse(new Point(x=x, y=y), w, h, kwargs)
+}
+
+function line({
+  x1 = 0, 
+  y1 = 0,
+  x2 = 0,
+  y2 = 0,
+  ...kwargs
+}={}) {
+  return new Line(new Point(x=x1, y=y1), new Point(x=x2, y=y2), kwargs)
 }
 
 function show(...shapes) {
@@ -181,3 +238,8 @@ function show(...shapes) {
 
   sketch.draw = new Function(drawFn)
 }
+
+// export const joy = {
+//   point: point,
+//   circle: circle,
+// }
