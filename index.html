@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sketch</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="libraries/p5.min.js"></script>
+    <script src="libraries/p5.sound.min.js"></script>
+
+    <script src="joy/joy.js"></script>
+  </head>
+  
+  <body>
+    <script>
+      const s = p => {
+
+      p.setup = function() {
+        p.createCanvas(500, 500);
+      };
+
+      p.draw = function() {
+        p.background(0);
+        p.fill(255);
+      };
+      };
+
+      const sketch = new p5(s);
+    </script>
+
+    <script src="sketch.js"></script>
+  </body>
+</html>
