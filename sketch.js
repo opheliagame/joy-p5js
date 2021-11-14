@@ -5,6 +5,31 @@
 // l = line({x1: 0, y1: 200, x1: 200, y: 400})
 // show(p, c, r, e, l)
 
-// t = rotate({angle: 10})
-shape = circle({x: 100, r: 50}).repeat({n: 100, transform: rotate({angle: 10})})
+function executeFunctionByName(functionName, context /*, args */) {
+  var args = Array.prototype.slice.call(arguments, 2);
+  var namespaces = functionName.split(".");
+  var func = namespaces.pop();
+  for(var i = 0; i < namespaces.length; i++) {
+    context = context[namespaces[i]];
+  }
+  return context[func].apply(context, args);
+}
+
+
+// sketch.draw = function() {
+//   sketch.background(255)
+//   sketch.strokeWeight(0.5)
+//   for(let i = 0; i < sketch.width; i+=50) {
+//     sketch.line(i, 0, i, sketch.height)
+//   }
+//   for(let i = 0; i < sketch.height; i+=50) {
+//     sketch.line(0, i, sketch.width, i)
+//   }
+//   sketch.strokeWeight(1)
+// }
+
+t = rotate({angle: 10}).scale({x: 0.97, y: 0.97})
+console.log(t)
+shape = circle({x: 100, r: 50}).repeat({n: 100, transform: t})
 show(shape)
+// shape.show(sketch)

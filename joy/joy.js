@@ -82,11 +82,12 @@ class Shape {
     return d
   }
 
-  show() {
+  show(p) {
     let blocks = []
     
     if(this.children.length == 0) {
-      let transform = this.transform.map(t => t.show())
+
+      let transform = this.transform.map(t => t.show(p))
       let shapeFn = `${this.tag}(${Object.values(this.attrs).join(', ')})` 
       let pushFn = `push()`
       let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
@@ -96,7 +97,7 @@ class Shape {
     }
     else {
       this.children.forEach(child => {
-        let transform = child.transform.map(t => t.show())
+        let transform = child.transform.map(t => t.show(p))
         let shapeFn = `${child.tag}(${Object.values(child.attrs).join(', ')})` 
         let pushFn = `push()`
         let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
@@ -108,7 +109,7 @@ class Shape {
     }
     
     blocks = blocks.join('\n')
-    console.log(blocks)
+    // console.log(blocks)
     return blocks
     
   }
@@ -154,18 +155,12 @@ class Shape {
       c.transform.push(t)
       this.children.push(c)
     })
-    console.log(this)
+    // console.log(this)
     return this
   }
 }
 
 class Point extends Shape {
-  /* Creates a new Point.
-  Point represents a point in the coordinate space and it contains
-  attributes x and y.
-      >>> p = Point(x=100, y=50)
-   */
-
   constructor(x, y) {
     super("point", {x: x, y: y})
     this.x = x
@@ -184,27 +179,6 @@ class Point extends Shape {
 }
 
 class Circle extends Shape {
-  /* Creates a circle shape.
-    Parameters:
-        center:
-            The center point of the circle.
-            Defaults to Point(0, 0) when not specified.
-        radius:
-            The radius of the circle.
-            Defaults to 100 when not specified.
-    Examples:
-    Draw a circle.
-        >>> c = Circle()
-        >>> show(c)
-    Draw a Circle with radius 50.
-        >>> c = Circle(radius=50)
-        >>> show(c)
-    Draw a circle with center at (100, 100) and radius as 50.
-        >>> c = Circle(center=Point(x=100, y=100), radius=50)
-        >>> show(c)
-    When no arguments are specified, it uses (0, 0) as the center and
-    100 as the radius. */
-    
   constructor(center=new Point(0, 0), radius=100, kwargs={}) {
     super("circle", {cx: center.x, cy: center.y, r:radius})
     this.center = center
@@ -242,15 +216,67 @@ class Transformation {
   constructor(
     tag,
     attrs = {},
+    children = []
   ) {
     this.tag = tag
     this.attrs = attrs
+    this.children = children
   }
 
-  show() {
-    return `${this.tag}(${Object.values(this.attrs).join(', ')})`
+  show(p) {
+    if (this.children.length === 0) {
+      // console.log(window['p'])
+      // console.log(window['p'][this.tag](`${Object.values(this.attrs).join(', ')}`))
+      return `${this.tag}(${Object.values(this.attrs).join(', ')})`
+    }
+    // else {
+    //   let parentTransform = `${this.tag}(${Object.values(this.attrs).join(', ')})`
+    //   let transforms = this.children.map(transform => {
+    //     console.log(transform)
+    //     return `${transform.tag}(${Object.values(transform.attrs).join(', ')})`
+    //   })
+    //   console.log([parentTransform].concat(transforms))
+    //   return [parentTransform].concat(transforms).join('\n')
+    // }
+    else {
+      return this.children.map(transform => {
+        // console.log(transform)
+        return transform.show()
+      }).join('\n')
+      // return [`${this.tag}(${Object.values(this.attrs).join(', ')})`].concat(this.children.map(transform => {
+      //   console.log(transform)
+      //   return transform.show()
+      // })).join('\n')
+    }
   }
 
+  // piping transforms together
+  // translate().rotate().scale()
+  translate({
+    x = 0, 
+    y = 0
+  }={x: 0, y: 0}) {
+    let transform = new Translate(x, y)
+    this.children.push(transform)
+    return this
+  }
+
+  rotate({
+    angle = 0
+  }={angle: 0}) {
+    let transform = new Rotate(angle)
+    this.children.push(transform)
+    return this
+  }
+
+  scale({
+    x = 1, 
+    y = 1
+  }={x: 1, y: 1}) {
+    let transform = new Scale(x, y)
+    this.children.push(transform)
+    return this
+  }
 
 }
 
@@ -281,11 +307,16 @@ class Repeat extends Transformation {
   constructor(n, transform) {
     // transform should be of instance Transformation
     if (!(transform instanceof Transformation)) return
-    let attrs = Object.entries(transform.attrs).map(t => {
-      const [key, value] = t
-      return [key, value*n]
-    })
-    super(transform.tag, Object.fromEntries(attrs))
+    let children = []
+    for(let i = 0; i < n; i++) {
+      let p = new Transformation(transform.tag, transform.attrs)
+      let c = transform.children.map(child => {
+        return new Transformation(child.tag, child.attrs)
+      })
+      children = children.concat([p, ...c]) 
+    }
+    // console.log(childre)
+    super(transform.tag, transform.attrs, children)
   }
 }
 
@@ -399,7 +430,3 @@ function show(...shapes) {
   sketch.draw = new Function(drawFn.join('\n'))
 }
 
-// export const joy = {
-//   point: point,
-//   circle: circle,
-// }
