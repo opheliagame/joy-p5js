@@ -28,8 +28,12 @@ function executeFunctionByName(functionName, context /*, args */) {
 //   sketch.strokeWeight(1)
 // }
 
-t = rotate({angle: 10}).scale({x: 0.97, y: 0.97})
+
+// Example 1
+t = rotate({angle: 10}).scale({x: 0.99, y: 0.99})
 console.log(t)
-shape = circle({x: 100, r: 50}).repeat({n: 100, transform: t})
+shape = circle({x: 100, r: 50}).repeat({n: 200, transform: t})
 show(shape)
-// shape.show(sketch)
+shape.show(sketch)
+
+// Example 2

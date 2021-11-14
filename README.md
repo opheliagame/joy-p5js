@@ -53,3 +53,5 @@ p.draw = function() {
   - https://medium.com/@ian_grubb/function-piping-in-javascript-a125b0876a2b
   - https://www.keithcirkel.co.uk/
 
+## video
+[youtube](https://www.youtube.com/watch?v=BxoHK7yFapI)
