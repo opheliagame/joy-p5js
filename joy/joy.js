@@ -44,9 +44,9 @@ class Shape {
   ) {
     // Creates a new shape.
     this.tag = tag
-    this.children = children
     this.attrs = attrs
-    this.transform = null
+    this.transform = []
+    this.children = []
   }
 
   get_reference() {
@@ -63,7 +63,8 @@ class Shape {
   }
 
   clone() {
-    
+    let shape = new Shape(this.tag, this.attrs)
+    return shape
   }
 
   get_attrs() {
@@ -82,13 +83,79 @@ class Shape {
   }
 
   show() {
-    let comm = `${this.tag}(${Object.values(this.attrs).join(', ')})` 
-    console.log(this.attrs)
-    return comm
+    let blocks = []
+    
+    if(this.children.length == 0) {
+      let transform = this.transform.map(t => t.show())
+      let shapeFn = `${this.tag}(${Object.values(this.attrs).join(', ')})` 
+      let pushFn = `push()`
+      let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
+      let popFn = `pop()`
+      let block = [pushFn, initialTransfom, ...transform, shapeFn, popFn].join('\n')
+      blocks = blocks.concat(block)
+    }
+    else {
+      this.children.forEach(child => {
+        let transform = child.transform.map(t => t.show())
+        let shapeFn = `${child.tag}(${Object.values(child.attrs).join(', ')})` 
+        let pushFn = `push()`
+        let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
+        let popFn = `pop()`
+        let block = [pushFn, initialTransfom, ...transform, shapeFn, popFn].join('\n')
+        // console.log(block)
+        blocks = blocks.concat(block)
+      })
+    }
+    
+    blocks = blocks.join('\n')
+    console.log(blocks)
+    return blocks
+    
   }
 
   toString() {
     return `<${this.tag} ${this.attrs}>`
+  }
+
+  // all transformation fns return a shape
+  translate({
+    x = 0, 
+    y = 0
+  }={x: 0, y: 0}) {
+    let transform = new Translate(x, y)
+    this.transform.push(transform)
+    return this
+  }
+
+  rotate({
+    angle = 0
+  }={angle: 0}) {
+    let transform = new Rotate(angle)
+    this.transform.push(transform)
+    return this
+  }
+
+  scale({
+    x = 1, 
+    y = 1
+  }={x: 1, y: 1}) {
+    let transform = new Scale(x, y)
+    this.transform.push(transform)
+    return this
+  }
+
+  repeat({
+    n,
+    transform
+  }) {
+    Array(n).fill(0).map((_, i) => {
+      let t = new Repeat(i+1, transform)
+      let c = this.clone()
+      c.transform.push(t)
+      this.children.push(c)
+    })
+    console.log(this)
+    return this
   }
 }
 
@@ -171,6 +238,57 @@ class Line extends Shape {
   }
 }
 
+class Transformation {
+  constructor(
+    tag,
+    attrs = {},
+  ) {
+    this.tag = tag
+    this.attrs = attrs
+  }
+
+  show() {
+    return `${this.tag}(${Object.values(this.attrs).join(', ')})`
+  }
+
+
+}
+
+class Translate extends Transformation {
+  constructor(x=0, y=0) {
+    super("translate", {x: x, y: y})
+    this.x = x
+    this.y = y
+  }
+}
+
+class Rotate extends Transformation {
+  constructor(angle=0) {
+    super("rotate", {angle: -angle})
+    this.angle = -angle
+  }
+}
+
+class Scale extends Transformation {
+  constructor(x=1, y=1) {
+    super("scale", {x: x, y: y})
+    this.x = x
+    this.y = y
+  }
+}
+
+class Repeat extends Transformation {
+  constructor(n, transform) {
+    // transform should be of instance Transformation
+    if (!(transform instanceof Transformation)) return
+    let attrs = Object.entries(transform.attrs).map(t => {
+      const [key, value] = t
+      return [key, value*n]
+    })
+    super(transform.tag, Object.fromEntries(attrs))
+  }
+}
+
 function point({
   x, 
   y
@@ -197,7 +315,7 @@ function circle({
         c = circle(x=10, y=20, r=50)
         show(c) */
 
-  return new Circle(new Point(x=x, y=y), r, kwargs)
+  return new Circle(new Point(x=x, y=y), r*2, kwargs)
 }
 
 function rectangle({
@@ -221,22 +339,64 @@ function ellipse({
 }
 
 function line({
-  x1 = 0, 
+  x1 = -100, 
   y1 = 0,
-  x2 = 0,
+  x2 = 100,
   y2 = 0,
   ...kwargs
 }={}) {
   return new Line(new Point(x=x1, y=y1), new Point(x=x2, y=y2), kwargs)
 }
 
-function show(...shapes) {
-  let drawFn = ['sketch.background(220)']
-  let commands = shapes.map(s => `sketch.${s.show()}`)
-  drawFn = drawFn.concat(commands).join('\n')
-  console.log(drawFn)
+function translate({
+  x = 0,
+  y = 0
+}={x: 0, y: 0}) {
+  return new Translate(x, y)
+}
 
-  sketch.draw = new Function(drawFn)
+function rotate({
+  angle = 0
+}={angle: 0}) {
+  return new Rotate(angle)
+}
+
+function scale({
+  x = 1, 
+  y = 1
+}={x: 1, y: 1}) {
+  return new Scale(x, y)
+}
+
+
+let drawFn = [
+  'sketch.background(255)'
+]
+
+let base = 
+`
+sketch.strokeWeight(0.5)
+for(let i = 0; i < sketch.width; i+=50) {
+  sketch.line(i, 0, i, sketch.height)
+}
+for(let i = 0; i < sketch.height; i+=50) {
+  sketch.line(0, i, sketch.width, i)
+}
+sketch.strokeWeight(1)
+`
+drawFn = drawFn.concat(base.split('\n'))
+
+function show(...shapes) {
+  let commands = shapes.map(s => {
+    let sFn = s.show().split('\n')
+    sFn = sFn.map(fn => `sketch.${fn}`)
+    drawFn = drawFn.concat(sFn)
+    return sFn
+  })
+  // drawFn = drawFn.concat(commands)
+  console.log(drawFn.join('\n'))
+
+  sketch.draw = new Function(drawFn.join('\n'))
 }
 
 // export const joy = {

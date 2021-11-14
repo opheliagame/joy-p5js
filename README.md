@@ -4,15 +4,28 @@ this library provides [joy](https://github.com/fossunited/joy), a tiny creative 
 
 ## API 
 
-point(x, y)
-circle(x, y, r)
-rectangle(x, y, w, h)
-ellipse(x, y, w, h)
-line(x1, y1, x2, y2)
+```js
+shape = point({x: x, y: y})
+
+shape = circle({x: x, y: y, r: r})
+
+shape = rectangle({x: x, y: y, w: w, h: h})
+
+shape = ellipse({x: x, y: y, w: w, h: h})
+
+shape = line({x1: x1, y1: y1, x2: x2, y2: y2})
+
+shape = circle().translate({x: x, y: y}).rotate({angle: 45})
+
+show(shape)
+```
 
 ## TODO
 
 - [ ] exception raising for line fn
+- [ ] implement polygon fn
+- [ ] combining shapes 
+- [ ] piping transforms together without shape `rotate().scale()`
 
 
 ## Refs
