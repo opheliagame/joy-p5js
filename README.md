@@ -28,7 +28,7 @@ shape = line({x1: x1, y1: y1, x2: x2, y2: y2})
 
 shape = circle().translate({x: x, y: y}).rotate({angle: 45})
 
-show(shape)
+shape = circle().translate({x: x, y: y}).rotate({angle: 45}).repeat({n: 12, transform: rotate({angle: 10})})
 
 p.draw = function() {
   p.background(255);

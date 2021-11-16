@@ -67,6 +67,11 @@ class Shape {
     return shape
   }
 
+  add(shape) {
+    this.children.push(shape)
+    return this
+  }
+
   get_attrs() {
     attrs = this.attrs
     if (this.transform) { attrs.transform = this.transform.toString() }
@@ -82,36 +87,15 @@ class Shape {
     return d
   }
 
-  show(p) {
-    let blocks = []
-    
-    if(this.children.length == 0) {
-
-      let transform = this.transform.map(t => t.show(p))
-      let shapeFn = `${this.tag}(${Object.values(this.attrs).join(', ')})` 
-      let pushFn = `push()`
-      let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
-      let popFn = `pop()`
-      let block = [pushFn, initialTransfom, ...transform, shapeFn, popFn].join('\n')
-      blocks = blocks.concat(block)
-    }
-    else {
-      this.children.forEach(child => {
-        let transform = child.transform.map(t => t.show(p))
-        let shapeFn = `${child.tag}(${Object.values(child.attrs).join(', ')})` 
-        let pushFn = `push()`
-        let initialTransfom = `translate(sketch.width/2, sketch.height/2)`
-        let popFn = `pop()`
-        let block = [pushFn, initialTransfom, ...transform, shapeFn, popFn].join('\n')
-        // console.log(block)
-        blocks = blocks.concat(block)
-      })
-    }
-    
-    blocks = blocks.join('\n')
-    // console.log(blocks)
-    return blocks
-    
+  show(p) {  
+    p['push']()
+    p['translate'](p.width/2, p.height/2)
+    this.transform.forEach(t => t.show(p))
+    p[this.tag](...Object.values(this.attrs))
+    p['pop']()
+    this.children.forEach(child => {
+      return child.show(p)
+    })
   }
 
   toString() {
@@ -225,28 +209,12 @@ class Transformation {
 
   show(p) {
     if (this.children.length === 0) {
-      // console.log(window['p'])
-      // console.log(window['p'][this.tag](`${Object.values(this.attrs).join(', ')}`))
-      return `${this.tag}(${Object.values(this.attrs).join(', ')})`
+      p[this.tag](...Object.values(this.attrs))
     }
-    // else {
-    //   let parentTransform = `${this.tag}(${Object.values(this.attrs).join(', ')})`
-    //   let transforms = this.children.map(transform => {
-    //     console.log(transform)
-    //     return `${transform.tag}(${Object.values(transform.attrs).join(', ')})`
-    //   })
-    //   console.log([parentTransform].concat(transforms))
-    //   return [parentTransform].concat(transforms).join('\n')
-    // }
     else {
-      return this.children.map(transform => {
-        // console.log(transform)
-        return transform.show()
-      }).join('\n')
-      // return [`${this.tag}(${Object.values(this.attrs).join(', ')})`].concat(this.children.map(transform => {
-      //   console.log(transform)
-      //   return transform.show()
-      // })).join('\n')
+      return this.children.forEach(transform => {
+        return transform.show(p)
+      })
     }
   }
 
@@ -271,7 +239,7 @@ class Transformation {
 
   scale({
     x = 1, 
-    y = 1
+    y = x
   }={x: 1, y: 1}) {
     let transform = new Scale(x, y)
     this.children.push(transform)
@@ -398,35 +366,3 @@ function scale({
 }={x: 1, y: 1}) {
   return new Scale(x, y)
 }
-
-
-let drawFn = [
-  'sketch.background(255)'
-]
-
-let base = 
-`
-sketch.strokeWeight(0.5)
-for(let i = 0; i < sketch.width; i+=50) {
-  sketch.line(i, 0, i, sketch.height)
-}
-for(let i = 0; i < sketch.height; i+=50) {
-  sketch.line(0, i, sketch.width, i)
-}
-sketch.strokeWeight(1)
-`
-drawFn = drawFn.concat(base.split('\n'))
-
-function show(...shapes) {
-  let commands = shapes.map(s => {
-    let sFn = s.show().split('\n')
-    sFn = sFn.map(fn => `sketch.${fn}`)
-    drawFn = drawFn.concat(sFn)
-    return sFn
-  })
-  // drawFn = drawFn.concat(commands)
-  console.log(drawFn.join('\n'))
-
-  sketch.draw = new Function(drawFn.join('\n'))
-}
-

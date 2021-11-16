@@ -6,3 +6,21 @@ html, body {
 canvas {
   display: block;
 }
+
+p {
+  padding: 1px 0px 2px 0px;
+}
+h1 {
+  padding: 1rem 0px 2rem 0px;
+}
+h2 {
+  padding: 0.5rem 0px 1rem 0px;
+}
+
+.row {
+  padding: 2rem 0px 2rem 0px;
+}
+
+br {
+  width: 100vw;
+}
