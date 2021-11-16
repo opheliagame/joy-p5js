@@ -40,8 +40,8 @@ p.draw = function() {
 
 - [ ] exception raising for line fn, and for others
 - [ ] implement polygon fn
-- [ ] combining shapes 
-- [ ] piping transforms together without shape `rotate().scale()`
+- [x] combining shapes 
+- [x] piping transforms together without shape `rotate().scale()`
 
 
 ## Refs
