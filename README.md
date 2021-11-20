@@ -32,7 +32,7 @@ shape = circle().translate({x: x, y: y}).rotate({angle: 45}).repeat({n: 12, tran
 
 p.draw = function() {
   p.background(255);
-  flower.transform({x: 10}).show(p)
+  shape.transform({x: 10}).show(p)
 }
 ```
 

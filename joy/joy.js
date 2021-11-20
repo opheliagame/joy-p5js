@@ -1,35 +1,3 @@
-function randomChoice(arr) {
-  return arr[Math.floor(arr.length * Math.random())];
-}
-
-const SQRT2 = 2**0.5
-const ASCII_LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-const DIGITS = '0123456789'
-const ID_SUFFIX = Array(4).fill(0).map(() => randomChoice(ASCII_LETTERS+DIGITS)).join('')
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators
-function shapeSequenceIterator(start = 0, end = Infinity, step = 1) {
-  let nextIndex = start;
-  let iterationCount = 0;
-  
-  const rangeIterator = {
-    next: function() {
-      let result;
-      let nextSeq = `s-${nextIndex}-${ID_SUFFIX}`
-      if (nextIndex < end) {
-          result = { value: nextSeq, done: false }
-          nextIndex += step;
-          iterationCount++;
-          return result;
-      }
-      return { value: iterationCount, done: true }
-    }
-  };
-  return rangeIterator;
-}
-
-let shapeSequence = shapeSequenceIterator()
-
 class Shape {
   /* Shape is the base class for all shapes in Joy.
   A Shape is an SVG node and supports converting itthis into svg text.
@@ -40,30 +8,17 @@ class Shape {
   constructor(
     tag,
     attrs = {},
-    children = null
+    children = []
   ) {
     // Creates a new shape.
     this.tag = tag
     this.attrs = attrs
     this.transform = []
-    this.children = []
-  }
-
-  get_reference() {
-    if (!('id' in this.attrs)) {
-      this.attrs.id = shapeSequence.next()
-    }
-
-    attrs = {"xlink:href": "#" + this.id}
-    return Shape("use", attrs)
-  }
-
-  apply_transform(transform) {
-
+    this.children = children
   }
 
   clone() {
-    let shape = new Shape(this.tag, this.attrs)
+    let shape = new Shape(this.tag, this.attrs, [...this.children])
     return shape
   }
 
@@ -72,37 +27,19 @@ class Shape {
     return this
   }
 
-  get_attrs() {
-    attrs = this.attrs
-    if (this.transform) { attrs.transform = this.transform.toString() }
-    return attrs
-  }
-
-  as_dict() {
-    d = this.get_attrs()
-    d.tag = this.tag
-    if (this.children) {
-      d.children = this.children.map(n => n.as_dict())
-    }
-    return d
-  }
-
   show(p) {  
     p['push']()
-    p['translate'](p.width/2, p.height/2)
     this.transform.forEach(t => t.show(p))
     p[this.tag](...Object.values(this.attrs))
+    this.children.forEach(child => child.show(p))
     p['pop']()
-    this.children.forEach(child => {
-      return child.show(p)
-    })
   }
 
   toString() {
     return `<${this.tag} ${this.attrs}>`
   }
 
-  // all transformation fns return a shape
+  // all transformation functions return a shape
   translate({
     x = 0, 
     y = 0
@@ -133,13 +70,13 @@ class Shape {
     n,
     transform
   }) {
+    let c = this.clone()
     Array(n).fill(0).map((_, i) => {
       let t = new Repeat(i+1, transform)
-      let c = this.clone()
-      c.transform.push(t)
-      this.children.push(c)
+      let cn = c.clone()
+      cn.transform.push(t)
+      this.children.push(cn)
     })
-    // console.log(this)
     return this
   }
 }
@@ -164,7 +101,7 @@ class Point extends Shape {
 
 class Circle extends Shape {
   constructor(center=new Point(0, 0), radius=100, kwargs={}) {
-    super("circle", {cx: center.x, cy: center.y, r:radius})
+    super("circle", {cx: center.x, cy: center.y, d: radius*2})
     this.center = center
     this.radius = radius
   }
@@ -208,14 +145,10 @@ class Transformation {
   }
 
   show(p) {
-    if (this.children.length === 0) {
-      p[this.tag](...Object.values(this.attrs))
-    }
-    else {
-      return this.children.forEach(transform => {
-        return transform.show(p)
-      })
-    }
+    p[this.tag](...Object.values(this.attrs))
+    this.children.forEach(transform => {
+      return transform.show(p)
+    })
   }
 
   // piping transforms together
@@ -283,7 +216,6 @@ class Repeat extends Transformation {
       })
       children = children.concat([p, ...c]) 
     }
-    // console.log(childre)
     super(transform.tag, transform.attrs, children)
   }
 }
@@ -302,19 +234,7 @@ function circle({
   r = 100, 
   ...kwargs
 }={}) {
-  /* Creates a circle with center at (x, y) and radius of r.
-    Examples:
-    Draw a circle.
-        c = circle()
-        show(c)
-    Draw a circle with radius 50.
-        c = circle(r=50)
-        show(c)
-    Draw a circle with center at (10, 20) and a radius of 50.
-        c = circle(x=10, y=20, r=50)
-        show(c) */
-
-  return new Circle(new Point(x=x, y=y), r*2, kwargs)
+  return new Circle(new Point(x=x, y=y), r, kwargs)
 }
 
 function rectangle({

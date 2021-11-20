@@ -69,7 +69,7 @@ shape = circle().translate({x: x, y: y}).rotate({angle: 45}).repeat({n: 12, tran
 
 p.draw = function() {
   p.background(255);
-  flower.transform({x: 10}).show(p)
+  shape.transform({x: 10}).show(p)
 }
           </code>
         </pre>
@@ -105,27 +105,39 @@ c2 = circle({x: 50, y: 0, r: 50})
         <div class="row flex flex-col md:flex-row justify-center" id="row3">
           <div class="sketch"></div>
           <div class="code flex-1">
+            
+          </div>
+        </div>
+
+        <div class="row flex flex-col md:flex-row justify-center" id="row4">
+          <div class="sketch"></div>
+          <div class="code flex-1">
             <pre class="h-full">
               <code class="language-js">
-const sketch4 = new p5(getP5Instance(), document.querySelector('#row3 .sketch'))
-sketch4.draw = () => {
-  drawGrid(sketch4)
-  let t = sketch4.millis()/100
+const sketch5 = new p5(getP5Instance(), document.querySelector('#row4 .sketch'))
+function eye(outer, inner, theta) {
+  let r = outer.radius
+  let innern = inner.translate({x: outer.center.x, y: outer.center.y})
+                    .rotate({angle: theta})
+                    .translate({x: r/2})
+  return outer.add(innern)
+}
 
-  sketch4.shape = ellipse({x: 50, 
-                           y: 0, 
-                           w: 200*sketch4.abs(sketch4.sin(t)), 
-                           h: 100*sketch4.abs(sketch4.sin(t))})
-                  .repeat({n: 72, transform: rotate({angle: 10})
-                  .scale({x: 0.95})})
-  sketch4.shape.show(sketch4)
+sketch5.draw = () => {
+  drawGrid(sketch5)
+  
+  let theta = sketch5.millis()/10
+  let e = eye(circle({x: 100, y: 100, r: 50}), circle({r: 25}), theta)
+  let eyes = e.repeat({n: 4, transform: rotate({angle: 90})})
+  
+  eyes.show(sketch5)
 }
               </code>
             </pre>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
 
     <script src="examples.js"></script>
