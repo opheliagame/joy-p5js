@@ -42,6 +42,7 @@ p.draw = function() {
 - [ ] implement polygon fn
 - [x] combining shapes 
 - [x] piping transforms together without shape `rotate().scale()`
+- [ ] exception handling becomes essential for editor 
 
 
 ## Refs

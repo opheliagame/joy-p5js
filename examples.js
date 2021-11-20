@@ -1,33 +1,3 @@
-const getP5Instance = () => {
-  const s = p => {
-    p.setup = function() {
-      if(mobileCheck() === true) {
-        p.createCanvas(300, 300, p.WEBGL)
-      } else {
-        p.createCanvas(500, 500, p.WEBGL);
-      }
-
-      // defaults to go with Joy
-      p.noFill()
-      p.rectMode(p.CENTER)
-      p.angleMode(p.DEGREES)
-    };
-  };
-  return s
-}
-
-const drawGrid = (p) => {
-  p.background(255)
-  p.strokeWeight(0.5)
-  for(let i = -p.width/2; i <= p.width/2; i+=50) {
-    p.line(i, -p.height/2, i, p.height/2)
-  }
-  for(let i = -p.height/2; i <= p.height/2; i+=50) {
-    p.line(-p.width/2, i, p.width/2, i)
-  }
-  p.strokeWeight(1)
-}
-
 // Example 1
 const sketch1 = new p5(getP5Instance(), document.querySelector('#row1 .sketch'))
 sketch1.c = circle()
@@ -69,4 +39,27 @@ sketch5.draw = () => {
   let eyes = e.repeat({n: 4, transform: rotate({angle: 90})})
   
   eyes.show(sketch5)
+}
+
+// Example 6
+const sketch6 = new p5(getP5Instance(), document.querySelector('#row5 .sketch'))
+var n = 300;
+var c = 20;
+sketch6.draw = () => {
+  drawGrid(sketch6)
+  
+  sketch6.rotate(n * 0.3);
+  let theta = sketch6.millis()/10
+
+  for (var i = 0; i < n; i++) {
+    var a = i * 137.5;
+    var r = c * sketch6.sqrt(i);
+    var x = r * sketch6.cos(a);
+    var y = r * sketch6.sin(a)
+    // sketch6.fill(0);
+    let e = eye(circle({x: x, y: y, r: 10}), circle({r: 5}), theta)
+    e.show(sketch6)
+    // circle({x: x, y: y, r: 2}).show(sketch6)
+  }
+
 }
