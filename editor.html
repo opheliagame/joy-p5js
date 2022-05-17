@@ -20,6 +20,13 @@
 
     <script src="utils.js"></script>
     <script src="joy/joy.js"></script>
+
+    <style>
+      .CodeMirror {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: medium;
+      }
+    </style>
   </head>
   
   <body>
@@ -33,13 +40,17 @@
 
       <div class="px-2">
         <button class="bg-gray-100 px-2" id="runButton">Run</button>
+        <button class="bg-gray-100 px-2" id="saveButton">Save</button>
         <div class="flex flex-col md:flex-row py-2">
-          <div class="flex-auto">
-            <textarea class="code">c = circle()</textarea>
+          <div class="flex-auto w-1/2">
+            <textarea class="code font-mono text-sm">c = circle()</textarea>
           </div>
 
-          <div class="sketch border flex-initial">
-            
+          <div class="flex-initial">
+            <div class="sketch border"></div>
+            <div class="error-log text-red-500">
+              errors will be reported here
+            </div>
           </div>
         </div>
       </div>
@@ -56,10 +67,32 @@
       });
 
       let runButton = document.getElementById('runButton')
+      let errorLog = document.querySelector('.error-log')
       runButton.addEventListener('click', () => {
         let codeToRun = myCodeMirror.getValue()
+        sk.background(255)
+        sk.smooth()
+        drawGrid(sk)
+
+        try {
+          eval(codeToRun)
+          errorLog.innerHTML = ''
+        } catch(error) {
+          console.log('eval')
+          console.log(error)
+          errorLog.innerHTML = error
+        }
+
+        
         sk.draw = new Function(codeToRun)
+        
       }) 
+
+      // saving frame 
+      let saveButton = document.getElementById('saveButton')
+      saveButton.addEventListener('click', () => {
+        sk.save('canvas.jpg')
+      })
     </script>
 
   </body>

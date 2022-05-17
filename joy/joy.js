@@ -8,11 +8,13 @@ class Shape {
   constructor(
     tag,
     attrs = {},
+    kwargs = {},
     children = []
   ) {
     // Creates a new shape.
     this.tag = tag
     this.attrs = attrs
+    this.kwargs = kwargs
     this.transform = []
     this.children = children
   }
@@ -28,11 +30,21 @@ class Shape {
   }
 
   show(p) {  
-    p['push']()
-    this.transform.forEach(t => t.show(p))
-    p[this.tag](...Object.values(this.attrs))
-    this.children.forEach(child => child.show(p))
-    p['pop']()
+    // try {
+      p['push']()
+      this.transform.forEach(t => t.show(p))
+
+      for(const [key, value] of Object.entries(this.kwargs)) {
+        p[key](value)
+      }
+
+      p[this.tag](...Object.values(this.attrs))
+      this.children.forEach(child => child.show(p))
+      p['pop']()
+    // } catch(error) {
+    //   throw new Error('show call missing p5 instance name')
+    // }
+    
   }
 
   toString() {
@@ -82,7 +94,7 @@ class Shape {
 }
 
 class Point extends Shape {
-  constructor(x, y) {
+  constructor(x, y, kwargs={}) {
     super("point", {x: x, y: y})
     this.x = x
     this.y = y
@@ -100,16 +112,16 @@ class Point extends Shape {
 }
 
 class Circle extends Shape {
-  constructor(center=new Point(0, 0), radius=100, kwargs={}) {
-    super("circle", {cx: center.x, cy: center.y, d: radius*2})
+  constructor(center=new Point(0, 0), radius=100, style={}) {
+    super("circle", {cx: center.x, cy: center.y, d: radius*2}, style)
     this.center = center
     this.radius = radius
   }
 }
 
 class Ellipse extends Shape {
-  constructor(center=new Point(0, 0), width=200, height=100, kwargs={}) {
-    super("ellipse", {x: center.x, y: center.y, w: width, h: height})
+  constructor(center=new Point(0, 0), width=200, height=100, style={}) {
+    super("ellipse", {x: center.x, y: center.y, w: width, h: height, d: 50}, style)
     this.center = center
     this.width = width
     this.height = height
@@ -117,8 +129,8 @@ class Ellipse extends Shape {
 }
 
 class Rectangle extends Shape {
-  constructor(center=new Point(0, 0), width=200, height=100, kwargs={}) {
-    super("rect", {x: center.x, y: center.y, w: width, h: height})
+  constructor(center=new Point(0, 0), width=200, height=100, style={}) {
+    super("rect", {x: center.x, y: center.y, w: width, h: height}, style)
     this.center = center
     this.width = width
     this.height = height
@@ -222,10 +234,11 @@ class Repeat extends Transformation {
 
 function point({
   x, 
-  y
+  y,
+  ...kwargs
 }={}) {
   // Creates a Point with x and y coordinates.
-  return new Point(x, y)
+  return new Point(x, y, kwargs)
 }
 
 function circle({
