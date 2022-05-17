@@ -6,7 +6,7 @@
 
     <title>joy(x)p5js - fosshack 2021 👩‍💻</title>
 
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="/style.css">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.5.0/prism-material-light.min.css" integrity="sha512-O5jY0oTgD2Elx8HWIERZc4ZpMfpXeTdmz03FfAWoieGoa940jVMFC4sm183QCcvHlQTmTgoV5im5KFPwj4B5xg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -18,8 +18,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.3/codemirror.min.css" integrity="sha512-6sALqOPMrNSc+1p5xOhPwGIzs6kIlST+9oGWlI4Wwcbj1saaX9J3uzO3Vub016dmHV7hM+bMi/rfXLiF5DNIZg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.3/mode/javascript/javascript.min.js" integrity="sha512-DJ/Flq7rxJDDhgkO49H/rmidX44jmxWot/ku3c+XXEF9XFal78KIpu7w6jEaQhK4jli1U3/yOH+Rp3cIIEYFPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="utils.js"></script>
-    <script src="joy/joy.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/addons/p5.sound.min.js"></script>
+    <script src="/dist/joy.p5.js"></script>
+
+    <style>
+      .CodeMirror {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: medium;
+      }
+    </style>
   </head>
   
   <body>
@@ -33,13 +42,17 @@
 
       <div class="px-2">
         <button class="bg-gray-100 px-2" id="runButton">Run</button>
+        <button class="bg-gray-100 px-2" id="saveButton">Save</button>
         <div class="flex flex-col md:flex-row py-2">
-          <div class="flex-auto">
-            <textarea class="code">c = circle()</textarea>
+          <div class="flex-auto w-1/2">
+            <textarea class="code font-mono text-sm">c = circle()</textarea>
           </div>
 
-          <div class="sketch border flex-initial">
-            
+          <div class="flex-initial">
+            <div class="sketch border"></div>
+            <div class="error-log text-red-500">
+              errors will be reported here
+            </div>
           </div>
         </div>
       </div>
@@ -47,7 +60,7 @@
     </div>
 
     <script>
-      const sk = new p5(getP5Instance(), document.querySelector('.sketch'))
+     
       var myCodeMirror = CodeMirror.fromTextArea(document.querySelector('.code'), {
         lineNumbers: true,
         mode: {name: "javascript", json: true},
@@ -56,11 +69,34 @@
       });
 
       let runButton = document.getElementById('runButton')
+      let errorLog = document.querySelector('.error-log')
       runButton.addEventListener('click', () => {
         let codeToRun = myCodeMirror.getValue()
-        sk.draw = new Function(codeToRun)
+        // sk.background(255)
+        // sk.smooth()
+        // drawGrid(sk)
+
+        try {
+          eval(codeToRun)
+          errorLog.innerHTML = ''
+        } catch(error) {
+          console.log('eval')
+          console.log(error)
+          errorLog.innerHTML = error
+        }
+
+        
+        // sk.draw = new Function(codeToRun)
+        
       }) 
+
+      // saving frame 
+      let saveButton = document.getElementById('saveButton')
+      saveButton.addEventListener('click', () => {
+        sk.save('canvas.jpg')
+      })
     </script>
+
 
   </body>
 </html>

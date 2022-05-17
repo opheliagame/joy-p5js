@@ -24,12 +24,14 @@ const getP5Instance = () => {
 
 const drawGrid = (p) => {
   p.background(255)
+  p.stroke(120)
   p.strokeWeight(0.5)
-  for(let i = -p.width/2; i <= p.width/2; i+=50) {
+  for(let i = -p.width/2; i <= p.width/2; i+=250) {
     p.line(i, -p.height/2, i, p.height/2)
   }
-  for(let i = -p.height/2; i <= p.height/2; i+=50) {
+  for(let i = -p.height/2; i <= p.height/2; i+=250) {
     p.line(-p.width/2, i, p.width/2, i)
   }
-  p.strokeWeight(1)
+  p.stroke(0)
+  p.strokeWeight(1.5)
 }
